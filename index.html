@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KOPA Fuel — Supplements for KOPA CrossFit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     KOPA FUEL — Supplement Storefront
+     Edit products in the PRODUCTS array near the bottom.
+     Edit GOOGLE_SHEET_URL to wire up the order form.
+     ============================================================ */
+  :root {
+    --bg: #0e0e0e;           /* near-black backdrop, matches logo */
+    --bg-2: #181818;         /* card surfaces */
+    --bg-3: #222222;         /* image backgrounds */
+    --ink: #ffffff;          /* KOPA white */
+    --ink-dim: #b8b8b8;
+    --ink-faint: #6e6e6e;
+    --accent: #f47b20;       /* KOPA orange */
+    --accent-dark: #d4631a;
+    --accent-glow: rgba(244, 123, 32, 0.35);
+    --line: #2a2a2a;
+    --shadow-lg: 0 25px 60px -15px rgba(0,0,0,0.7);
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Barlow', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  /* Decorative background grain + diagonal red slash */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(244,123,32,0.08), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(244,123,32,0.05), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ===== HEADER ===== */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 24px;
+    max-width: 1280px; margin: 0 auto;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    display: flex; align-items: baseline; gap: 10px;
+    line-height: 1;
+  }
+  .logo .brand { color: var(--accent); }
+  .logo .sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--ink-dim);
+    border-left: 1px solid var(--line);
+    padding-left: 12px;
+    margin-left: 4px;
+    font-weight: 600;
+  }
+  .cart-btn {
+    position: relative;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: var(--radius);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cart-btn:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 8px 20px var(--accent-glow); }
+  .cart-count {
+    background: white; color: var(--accent);
+    font-size: 12px; font-weight: 800;
+    padding: 2px 8px; border-radius: 10px;
+    min-width: 22px; text-align: center;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    padding: 90px 24px 70px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "FUEL";
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(200px, 35vw, 480px);
+    color: var(--bg-2);
+    z-index: 0;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    pointer-events: none;
+    user-select: none;
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero .eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    font-size: 14px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 7vw, 88px);
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+    margin-bottom: 22px;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p {
+    color: var(--ink-dim);
+    max-width: 580px;
+    margin: 0 auto;
+    font-size: 17px;
+  }
+  .hero-stripes {
+    display: flex; justify-content: center; gap: 24px;
+    margin-top: 32px; flex-wrap: wrap;
+  }
+  .stripe {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    font-size: 13px;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .stripe::before { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+
+  /* ===== HOW IT WORKS ===== */
+  .how-it-works {
+    padding: 56px 24px 36px;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 1;
+  }
+  .how-inner { max-width: 1100px; margin: 0 auto; }
+  .how-eyebrow {
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    color: var(--accent);
+    letter-spacing: 0.35em;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 32px;
+  }
+  .how-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .how-step {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 22px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .how-step:hover { border-color: var(--accent); }
+  .how-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+  .how-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+  .how-text {
+    color: var(--ink-dim);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* ===== FILTERS ===== */
+  .filters-wrap {
+    padding: 36px 24px 0;
+    max-width: 1280px; margin: 0 auto;
+  }
+  .filters {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .filter {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 10px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: var(--radius);
+  }
+  .filter:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .filter.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .search {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 12px 16px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+    transition: border-color 0.15s ease;
+  }
+  .search:focus { outline: none; border-color: var(--accent); }
+
+  /* ===== PRODUCT GRID ===== */
+  main { padding: 0 24px 80px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 22px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.25s ease;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  .card-img-wrap {
+    aspect-ratio: 1 / 1;
+    background: var(--bg-3);
+    position: relative;
+    overflow: hidden;
+  }
+  .card-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    padding: 18px;
+    transition: transform 0.4s ease;
+  }
+  .card:hover .card-img-wrap img { transform: scale(1.05); }
+  .card-tag {
+    position: absolute;
+    top: 12px; left: 12px;
+    background: var(--accent);
+    color: white;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    padding: 5px 10px;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+  .card-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+  .card-cat {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .card-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 14px;
+    flex: 1;
+  }
+  .card-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .price .currency { color: var(--accent); margin-right: 2px; }
+  .add-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.15s ease;
+  }
+  .add-btn:hover { background: var(--accent); color: white; }
+  .add-btn.added { background: var(--accent); color: white; }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-faint);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* ===== CART DRAWER ===== */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 200;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .cart-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 100%; max-width: 460px;
+    background: var(--bg);
+    border-left: 1px solid var(--line);
+    z-index: 300;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column;
+  }
+  .cart-drawer.open { transform: translateX(0); }
+  .cart-head {
+    padding: 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .cart-head h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+  }
+  .close {
+    background: none; border: none; color: var(--ink-dim);
+    font-size: 28px; cursor: pointer; line-height: 1;
+    transition: color 0.15s ease;
+  }
+  .close:hover { color: var(--accent); }
+  .cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+  .cart-item {
+    display: flex; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .cart-item-img {
+    width: 64px; height: 64px;
+    background: var(--bg-2);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+    object-fit: contain; padding: 6px;
+  }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+  .cart-item-price { color: var(--ink-dim); font-size: 14px; }
+  .qty-controls { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .qty-btn {
+    background: var(--bg-2); border: 1px solid var(--line);
+    color: var(--ink); width: 26px; height: 26px;
+    cursor: pointer; font-size: 14px; font-weight: 700;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-num { font-weight: 700; min-width: 22px; text-align: center; }
+  .remove {
+    background: none; border: none; color: var(--ink-faint);
+    cursor: pointer; font-size: 12px; margin-left: auto;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .remove:hover { color: var(--accent); }
+
+  .cart-empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--ink-faint);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 14px;
+  }
+
+  .cart-foot {
+    border-top: 1px solid var(--line);
+    padding: 20px 24px;
+  }
+  .total-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 16px;
+  }
+  .total-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    color: var(--ink-dim); font-weight: 600;
+  }
+  .total-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--accent);
+  }
+
+  /* ===== ORDER FORM ===== */
+  .order-form { display: none; }
+  .order-form.open { display: block; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 11px 14px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    border-radius: var(--radius);
+    transition: border-color 0.15s ease;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none; border-color: var(--accent);
+  }
+
+  .submit-btn, .checkout-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white; border: none;
+    padding: 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+  .submit-btn:hover, .checkout-btn:hover { background: var(--accent-dark); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .back-btn {
+    background: none; border: none; color: var(--ink-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px; letter-spacing: 0.2em;
+    text-transform: uppercase; cursor: pointer;
+    margin-bottom: 14px; font-weight: 600;
+    transition: color 0.15s ease;
+  }
+  .back-btn:hover { color: var(--ink); }
+
+  .success {
+    text-align: center; padding: 40px 20px;
+  }
+  .success h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px; color: var(--accent);
+    margin-bottom: 12px; letter-spacing: 0.04em;
+  }
+  .success p { color: var(--ink-dim); margin-bottom: 20px; }
+
+  .pickup-note {
+    background: var(--bg-2);
+    border-left: 3px solid var(--accent);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .commit-note {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: center;
+    padding: 12px 8px 4px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 50px 24px 30px;
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+  footer .big {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; color: var(--ink);
+    margin-bottom: 8px; letter-spacing: 0.04em;
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .hero { padding: 60px 20px 50px; }
+    .nav { padding: 14px 20px; }
+    .logo { font-size: 26px; }
+    .logo .sub { display: none; }
+    .cart-btn { padding: 10px 16px; font-size: 13px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
+    .card-name { font-size: 18px; }
+    .price { font-size: 22px; }
+    .add-btn { padding: 7px 12px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo">
+      <span class="brand">KOPA</span> CROSSFIT
+      <span class="sub">FUEL · FAMILY · COMMUNITY</span>
+    </div>
+    <button class="cart-btn" onclick="openCart()">
+      Cart
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="eyebrow">Group Buy · Members-Only Pricing · Gym Pickup</div>
+    <h1>FUEL THE <span class="accent">WORK.</span></h1>
+    <p>Reserve premium supplements at members-only prices. We pool orders, ship to the gym, and you pick up at the front desk. No markup runaround, no Amazon middleman.</p>
+    <div class="hero-stripes">
+      <span class="stripe">~2 Week Turnaround</span>
+      <span class="stripe">Gym Pickup</span>
+      <span class="stripe">Pay On Pickup</span>
+    </div>
+  </div>
+</section>
+
+<section class="how-it-works">
+  <div class="how-inner">
+    <div class="how-eyebrow">HOW IT WORKS</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-title">Reserve</div>
+        <div class="how-text">Pick what you want, drop it in the cart, and submit your reservation. No payment yet — just your name and number.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-title">We Pool & Order</div>
+        <div class="how-text">When enough reservations stack up, we place a group order with our supplier. Typically takes about 2 weeks from the day you reserve.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-title">Pickup at KOPA</div>
+        <div class="how-text">We text you when it's in. Stop by the front desk, grab your stuff, pay when you pick up. Cash, card, or Venmo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="filters-wrap">
+  <input type="text" class="search" id="search" placeholder="Search supplements..." oninput="renderProducts()">
+  <div class="filters" id="filters"></div>
+</div>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <div class="big">KOPA FUEL</div>
+  <div>143 Hill Street · Jefferson, GA 30549</div>
+  <div style="margin-top: 8px;">Questions? <a href="tel:+17067084377">(706) 708-4377</a></div>
+</footer>
+
+<!-- ===== CART DRAWER ===== -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head">
+    <h2>Your Cart</h2>
+    <button class="close" onclick="closeCart()">&times;</button>
+  </div>
+
+  <div id="cartContent">
+    <div class="cart-items" id="cartItems"></div>
+    <div class="cart-foot" id="cartFoot">
+      <div class="pickup-note" style="margin-bottom: 16px;">
+        <strong style="color: var(--ink);">Group buy:</strong> Reservations ship together. Ready at the gym in ~2 weeks. Pay on pickup.
+      </div>
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-amount" id="totalAmount">$0.00</span>
+      </div>
+      <button class="checkout-btn" onclick="showOrderForm()">Reserve My Order</button>
+    </div>
+  </div>
+
+  <div class="order-form" id="orderForm">
+    <div class="cart-items">
+      <button class="back-btn" onclick="hideOrderForm()">&larr; Back to cart</button>
+      <div class="pickup-note">
+        <strong style="color: var(--ink);">Group order — typically ready in ~2 weeks.</strong><br>
+        We pool reservations, place the order, and text you when it's at the front desk. Pay on pickup (cash, card, or Venmo).
+      </div>
+      <div class="form-group">
+        <label>Your Name *</label>
+        <input type="text" id="custName" required>
+      </div>
+      <div class="form-group">
+        <label>Phone Number *</label>
+        <input type="tel" id="custPhone" required placeholder="(706) 555-0100">
+      </div>
+      <div class="form-group">
+        <label>Email (optional)</label>
+        <input type="email" id="custEmail">
+      </div>
+      <div class="form-group">
+        <label>Notes for Staff (optional)</label>
+        <textarea id="custNotes" rows="2"></textarea>
+      </div>
+      <div class="commit-note">
+        By reserving, you're committing to pick up and pay for these items when the group order arrives.
+      </div>
+    </div>
+    <div class="cart-foot">
+      <div class="total-row">
+        <span class="total-label">Total</span>
+        <span class="total-amount" id="totalAmount2">$0.00</span>
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="submitOrder()">Submit Reservation</button>
+    </div>
+  </div>
+
+  <div class="order-form" id="successView">
+    <div class="success">
+      <h3>RESERVED!</h3>
+      <p>You're locked in for the next group order. We'll text you when it arrives at the gym — typically about 2 weeks. Pay on pickup.</p>
+      <button class="checkout-btn" onclick="resetCart()">Done</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  /* ============================================================
+     EDIT THIS: Your Google Apps Script Web App URL
+     Setup instructions are in the README below.
+     ============================================================ */
+  const GOOGLE_SHEET_URL = ''; // Paste your Apps Script web app URL here
+
+  /* ============================================================
+     EDIT THIS: Your products
+     - Default markup is 25% (set by MARKUP below).
+     - For "edge" products, add `markup: 1.30` for 30% markup.
+       Any product without a `markup` field uses the default.
+     - "tag" is optional ("Best Seller", "New", etc.) — delete the line if not used.
+     - "category" controls the filter buttons.
+     ============================================================ */
+  const MARKUP = 1.25; // default 25% markup
+
+  const PRODUCTS = [
+    {
+      id: 'jf-creatine-90',
+      name: 'Jocko Creatine',
+      brand: 'Jocko Fuel',
+      category: 'Performance',
+      desc: 'Pure creatine monohydrate. 90 servings, unflavored. 1.2 lb tub.',
+      wholesale: 27.50,
+      tag: 'Best Seller',
+      img: 'images/jf-creatine.jpg'
+    },
+    {
+      id: 'jf-greens-peach',
+      name: 'Jocko Greens — Peach',
+      brand: 'Jocko Fuel',
+      category: 'Greens',
+      desc: 'Greens powder with vitamins, minerals, and superfoods. 30 servings.',
+      wholesale: 35.00,
+      img: 'images/jf-greens-peach.jpg'
+    },
+    {
+      id: 'jf-greens-pineapple-coconut',
+      name: 'Jocko Greens — Pineapple Coconut',
+      brand: 'Jocko Fuel',
+      category: 'Greens',
+      desc: 'Greens powder with vitamins, minerals, and superfoods. 30 servings, 10.79 oz.',
+      wholesale: 35.00,
+      tag: 'New',
+      img: 'images/jf-greens-pineapple-coconut.jpg'
+    },
+    {
+      id: 'jf-go-5050-tactical',
+      name: 'Jocko GO — 50/50 Tactical (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Iced tea lemonade. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-5050-tactical.jpg'
+    },
+    {
+      id: 'jf-go-citrus-psycho',
+      name: 'Jocko GO — Citrus Psycho (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Lemon lime. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-citrus-psycho.jpg'
+    },
+    {
+      id: 'jf-go-mango-mayhem',
+      name: 'Jocko GO — Mango Mayhem (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Mango passionfruit. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-mango-mayhem.jpg'
+    },
+    {
+      id: 'jf-go-nitro-pop',
+      name: 'Jocko GO — Nitro Pop (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Nitro pop. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      tag: 'New',
+      img: 'images/jf-go-nitro-pop.jpg'
+    },
+    {
+      id: 'jf-go-afterburn-orange',
+      name: 'Jocko GO — Afterburn Orange (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Orange. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-afterburn-orange.jpg'
+    },
+    {
+      id: 'jf-go-pink-mist',
+      name: 'Jocko GO — Pink Mist (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Pink lemonade. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-pink-mist.jpg'
+    },
+    {
+      id: 'jf-go-sour-apple-sniper',
+      name: 'Jocko GO — Sour Apple Sniper (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Energy Drinks',
+      desc: 'Sour apple. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
+      wholesale: 25.77,
+      markup: 1.30,
+      img: 'images/jf-go-sour-apple-sniper.jpg'
+    },
+    {
+      id: 'jf-hydr-blue-raspberry',
+      name: 'Jocko Hydrate — Blue Raspberry (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Hydration',
+      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
+      wholesale: 24.63,
+      markup: 1.30,
+      img: 'images/jf-hydr-blue-raspberry.jpg'
+    },
+    {
+      id: 'jf-hydr-fruit-punch',
+      name: 'Jocko Hydrate — Fruit Punch (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Hydration',
+      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
+      wholesale: 24.63,
+      markup: 1.30,
+      img: 'images/jf-hydr-fruit-punch.jpg'
+    },
+    {
+      id: 'jf-hydr-island-orange',
+      name: 'Jocko Hydrate — Island Orange (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Hydration',
+      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
+      wholesale: 24.63,
+      markup: 1.30,
+      tag: 'New',
+      img: 'images/jf-hydr-island-orange.jpg'
+    },
+    {
+      id: 'jf-hydr-lemon-lime',
+      name: 'Jocko Hydrate — Lemon Lime (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Hydration',
+      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
+      wholesale: 24.63,
+      markup: 1.30,
+      tag: 'New',
+      img: 'images/jf-hydr-lemon-lime.jpg'
+    },
+    {
+      id: 'jf-creatine-sticks-30',
+      name: 'Jocko Creatine Sticks (30-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Performance',
+      desc: 'Single-serve creatine sticks, unflavored. Travel-friendly. 30 packets.',
+      wholesale: 14.99,
+      tag: 'New',
+      img: 'images/jf-creatine-sticks.jpg'
+    },
+    {
+      id: 'jf-molk-cookie-chocchip',
+      name: 'Mölk Cookie — Chocolate Chip (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Snacks',
+      desc: 'Soft-baked protein cookie. 52g each. Box of 12.',
+      wholesale: 18.12,
+      tag: 'New',
+      img: 'images/jf-molk-cookie-chocchip.jpg'
+    },
+    {
+      id: 'jf-molk-rtd-chocolate',
+      name: 'Mölk Protein Shake — Chocolate (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Shakes',
+      desc: 'Ready-to-drink protein shake. 30g protein. Case of 12 × 12oz bottles.',
+      wholesale: 34.66,
+      markup: 1.30,
+      tag: 'New',
+      img: 'images/jf-molk-rtd-chocolate.jpg'
+    },
+    {
+      id: 'jf-molk-rtd-coffee',
+      name: 'Mölk Protein Shake — Sweet Cream Coffee (12-pack)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Shakes',
+      desc: 'Ready-to-drink protein shake with coffee kick. 30g protein. Case of 12 × 12oz bottles.',
+      wholesale: 34.66,
+      markup: 1.30,
+      tag: 'New',
+      img: 'images/jf-molk-rtd-coffee.jpg'
+    },
+    {
+      id: 'jf-molk-powder-chocolate',
+      name: 'Mölk Protein Powder — Chocolate (2lb)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Powder',
+      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
+      wholesale: 32.22,
+      tag: 'Best Seller',
+      img: 'images/jf-molk-powder-chocolate.jpg'
+    },
+    {
+      id: 'jf-molk-powder-vanilla',
+      name: 'Mölk Protein Powder — Vanilla (2lb)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Powder',
+      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
+      wholesale: 32.22,
+      img: 'images/jf-molk-powder-vanilla.jpg'
+    },
+    {
+      id: 'jf-molk-powder-cookies-cream',
+      name: 'Mölk Protein Powder — Cookies & Cream (2lb)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Powder',
+      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
+      wholesale: 32.22,
+      img: 'images/jf-molk-powder-cookies-cream.jpg'
+    },
+    {
+      id: 'jf-molk-powder-coffee-donuts',
+      name: 'Mölk Protein Powder — Coffee & Donuts (2lb)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Powder',
+      desc: '22g protein per scoop. Whey + casein + egg blend. 28 servings.',
+      wholesale: 32.22,
+      img: 'images/jf-molk-powder-coffee-donuts.jpg'
+    },
+    {
+      id: 'jf-molk-powder-choc-mint',
+      name: 'Mölk Protein Powder — Chocolate Mint (2lb)',
+      brand: 'Jocko Fuel',
+      category: 'Protein Powder',
+      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
+      wholesale: 32.22,
+      img: 'images/jf-molk-powder-choc-mint.jpg'
+    },
+    {
+      id: 'jf-prewo-blue-raspberry',
+      name: 'Jocko Pre-Workout — Blue Raspberry (30 srv)',
+      brand: 'Jocko Fuel',
+      category: 'Pre-Workout',
+      desc: '200mg caffeine, citrulline, beta-alanine. High-stim pre-training formula. 30 servings.',
+      wholesale: 29.00,
+      tag: 'New',
+      img: 'images/jf-prewo-blue-raspberry.jpg'
+    },
+    {
+      id: 'jf-prewo-nitro-pop',
+      name: 'Jocko Pre-Workout — Nitro Pop (30 srv)',
+      brand: 'Jocko Fuel',
+      category: 'Pre-Workout',
+      desc: '200mg caffeine, citrulline, beta-alanine. High-stim pre-training formula. 30 servings.',
+      wholesale: 29.00,
+      tag: 'New',
+      img: 'images/jf-prewo-nitro-pop.jpg'
+    },
+  ];
+
+  // Auto-calculate marked-up price (uses per-product markup if set, otherwise base MARKUP)
+  PRODUCTS.forEach(p => {
+    const m = p.markup || MARKUP;
+    p.price = +(p.wholesale * m).toFixed(2);
+  });
+
+  /* ============================================================
+     CART STATE
+     ============================================================ */
+  let cart = JSON.parse(localStorage.getItem('kopaCart') || '[]');
+  let activeFilter = 'All';
+
+  function saveCart() {
+    localStorage.setItem('kopaCart', JSON.stringify(cart));
+    document.getElementById('cartCount').textContent = cart.reduce((s,i) => s + i.qty, 0);
+    renderCart();
+  }
+
+  function addToCart(id) {
+    const existing = cart.find(i => i.id === id);
+    if (existing) existing.qty++;
+    else {
+      const p = PRODUCTS.find(p => p.id === id);
+      cart.push({ id, name: p.name, price: p.price, img: p.img, qty: 1 });
+    }
+    saveCart();
+    // visual feedback
+    const btn = document.querySelector(`[data-add="${id}"]`);
+    if (btn) {
+      btn.classList.add('added');
+      btn.textContent = '✓ Added';
+      setTimeout(() => {
+        btn.classList.remove('added');
+        btn.textContent = 'Add';
+      }, 1100);
+    }
+  }
+
+  function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (!item) return;
+    item.qty += delta;
+    if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    saveCart();
+  }
+
+  function removeItem(id) {
+    cart = cart.filter(i => i.id !== id);
+    saveCart();
+  }
+
+  function cartTotal() {
+    return cart.reduce((s,i) => s + i.price * i.qty, 0);
+  }
+
+  /* ============================================================
+     RENDERING
+     ============================================================ */
+  function renderFilters() {
+    const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
+    document.getElementById('filters').innerHTML = cats.map(c =>
+      `<button class="filter ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
+    ).join('');
+  }
+
+  function setFilter(c) {
+    activeFilter = c;
+    renderFilters();
+    renderProducts();
+  }
+
+  function renderProducts() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const filtered = PRODUCTS.filter(p => {
+      const catMatch = activeFilter === 'All' || p.category === activeFilter;
+      const qMatch = !q || (p.name + ' ' + p.desc + ' ' + p.brand).toLowerCase().includes(q);
+      return catMatch && qMatch;
+    });
+    const grid = document.getElementById('grid');
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="empty">No products match.</div>';
+      return;
+    }
+    grid.innerHTML = filtered.map(p => `
+      <div class="card">
+        <div class="card-img-wrap">
+          ${p.tag ? `<span class="card-tag">${p.tag}</span>` : ''}
+          <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity=0.3">
+        </div>
+        <div class="card-body">
+          <div class="card-cat">${p.category}</div>
+          <div class="card-name">${p.name}</div>
+          <div class="card-desc">${p.desc}</div>
+          <div class="card-foot">
+            <div class="price"><span class="currency">$</span>${p.price.toFixed(2)}</div>
+            <button class="add-btn" data-add="${p.id}" onclick="addToCart('${p.id}')">Add</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderCart() {
+    const wrap = document.getElementById('cartItems');
+    if (cart.length === 0) {
+      wrap.innerHTML = '<div class="cart-empty">Cart is empty</div>';
+      document.getElementById('cartFoot').style.display = 'none';
+    } else {
+      document.getElementById('cartFoot').style.display = '';
+      wrap.innerHTML = cart.map(i => `
+        <div class="cart-item">
+          <img src="${i.img}" class="cart-item-img" alt="${i.name}">
+          <div class="cart-item-info">
+            <div class="cart-item-name">${i.name}</div>
+            <div class="cart-item-price">$${i.price.toFixed(2)} each</div>
+            <div class="qty-controls">
+              <button class="qty-btn" onclick="changeQty('${i.id}', -1)">−</button>
+              <span class="qty-num">${i.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${i.id}', 1)">+</button>
+              <button class="remove" onclick="removeItem('${i.id}')">Remove</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    const total = cartTotal();
+    document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+    document.getElementById('totalAmount2').textContent = '$' + total.toFixed(2);
+  }
+
+  /* ============================================================
+     DRAWER + ORDER FLOW
+     ============================================================ */
+  function openCart() {
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('cartContent').style.display = '';
+    document.getElementById('orderForm').classList.remove('open');
+    document.getElementById('successView').classList.remove('open');
+  }
+  function closeCart() {
+    document.getElementById('cartDrawer').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  function showOrderForm() {
+    if (cart.length === 0) return;
+    document.getElementById('cartContent').style.display = 'none';
+    document.getElementById('orderForm').classList.add('open');
+  }
+  function hideOrderForm() {
+    document.getElementById('cartContent').style.display = '';
+    document.getElementById('orderForm').classList.remove('open');
+  }
+
+  async function submitOrder() {
+    const name = document.getElementById('custName').value.trim();
+    const phone = document.getElementById('custPhone').value.trim();
+    const email = document.getElementById('custEmail').value.trim();
+    const notes = document.getElementById('custNotes').value.trim();
+
+    if (!name || !phone) {
+      alert('Please enter your name and phone number.');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const orderData = {
+      timestamp: new Date().toISOString(),
+      name, phone, email, notes,
+      items: cart.map(i => `${i.qty}x ${i.name} ($${(i.price * i.qty).toFixed(2)})`).join(' | '),
+      itemCount: cart.reduce((s,i) => s + i.qty, 0),
+      total: cartTotal().toFixed(2),
+    };
+
+    try {
+      if (GOOGLE_SHEET_URL) {
+        await fetch(GOOGLE_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Apps Script requires this
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(orderData),
+        });
+      } else {
+        // Dev mode — log so you can see it works
+        console.log('ORDER (no Sheet URL configured):', orderData);
+        await new Promise(r => setTimeout(r, 600));
+      }
+      // Show success
+      document.getElementById('orderForm').classList.remove('open');
+      document.getElementById('successView').classList.add('open');
+      cart = [];
+      saveCart();
+    } catch (err) {
+      alert('Could not submit order. Please call (706) 708-4377 or text us instead.');
+      btn.disabled = false;
+      btn.textContent = 'Submit Reservation';
+    }
+  }
+
+  function resetCart() {
+    document.getElementById('successView').classList.remove('open');
+    document.getElementById('cartContent').style.display = '';
+    document.getElementById('custName').value = '';
+    document.getElementById('custPhone').value = '';
+    document.getElementById('custEmail').value = '';
+    document.getElementById('custNotes').value = '';
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'Submit Reservation';
+    closeCart();
+  }
+
+  // Init
+  renderFilters();
+  renderProducts();
+  saveCart();
+
+  // Esc closes cart
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCart();
+  });
+</script>
+</body>
+</html>
