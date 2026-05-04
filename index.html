@@ -732,278 +732,49 @@
 <script>
   /* ============================================================
      EDIT THIS: Your Google Apps Script Web App URL
-     Setup instructions are in the README below.
+     Same URL handles both reading products and saving orders.
      ============================================================ */
-  const GOOGLE_SHEET_URL = ''; // Paste your Apps Script web app URL here
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxDY5Vlx2xvWxgdWkmdvz6YpFXjqzq84fmpOCro4CkOYOTLYd1JM-FSh73CglUA22zPZw/exec';
 
   /* ============================================================
-     EDIT THIS: Your products
-     - Default markup is 25% (set by MARKUP below).
-     - For "edge" products, add `markup: 1.30` for 30% markup.
-       Any product without a `markup` field uses the default.
-     - "tag" is optional ("Best Seller", "New", etc.) — delete the line if not used.
-     - "category" controls the filter buttons.
+     Default markup (25%). Per-product overrides come from the sheet's
+     "markup" column — leave it blank in the sheet to use this default.
      ============================================================ */
-  const MARKUP = 1.25; // default 25% markup
+  const MARKUP = 1.25;
 
-  const PRODUCTS = [
-    {
-      id: 'jf-creatine-90',
-      name: 'Jocko Creatine',
-      brand: 'Jocko Fuel',
-      category: 'Performance',
-      desc: 'Pure creatine monohydrate. 90 servings, unflavored. 1.2 lb tub.',
-      wholesale: 27.50,
-      tag: 'Best Seller',
-      img: 'images/jf-creatine.jpg'
-    },
-    {
-      id: 'jf-greens-peach',
-      name: 'Jocko Greens — Peach',
-      brand: 'Jocko Fuel',
-      category: 'Greens',
-      desc: 'Greens powder with vitamins, minerals, and superfoods. 30 servings.',
-      wholesale: 35.00,
-      img: 'images/jf-greens-peach.jpg'
-    },
-    {
-      id: 'jf-greens-pineapple-coconut',
-      name: 'Jocko Greens — Pineapple Coconut',
-      brand: 'Jocko Fuel',
-      category: 'Greens',
-      desc: 'Greens powder with vitamins, minerals, and superfoods. 30 servings, 10.79 oz.',
-      wholesale: 35.00,
-      tag: 'New',
-      img: 'images/jf-greens-pineapple-coconut.jpg'
-    },
-    {
-      id: 'jf-go-5050-tactical',
-      name: 'Jocko GO — 50/50 Tactical (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Iced tea lemonade. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-5050-tactical.jpg'
-    },
-    {
-      id: 'jf-go-citrus-psycho',
-      name: 'Jocko GO — Citrus Psycho (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Lemon lime. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-citrus-psycho.jpg'
-    },
-    {
-      id: 'jf-go-mango-mayhem',
-      name: 'Jocko GO — Mango Mayhem (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Mango passionfruit. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-mango-mayhem.jpg'
-    },
-    {
-      id: 'jf-go-nitro-pop',
-      name: 'Jocko GO — Nitro Pop (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Nitro pop. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      tag: 'New',
-      img: 'images/jf-go-nitro-pop.jpg'
-    },
-    {
-      id: 'jf-go-afterburn-orange',
-      name: 'Jocko GO — Afterburn Orange (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Orange. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-afterburn-orange.jpg'
-    },
-    {
-      id: 'jf-go-pink-mist',
-      name: 'Jocko GO — Pink Mist (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Pink lemonade. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-pink-mist.jpg'
-    },
-    {
-      id: 'jf-go-sour-apple-sniper',
-      name: 'Jocko GO — Sour Apple Sniper (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Energy Drinks',
-      desc: 'Sour apple. Clean caffeine, zero sugar. Case of 12 × 12oz cans.',
-      wholesale: 25.77,
-      markup: 1.30,
-      img: 'images/jf-go-sour-apple-sniper.jpg'
-    },
-    {
-      id: 'jf-hydr-blue-raspberry',
-      name: 'Jocko Hydrate — Blue Raspberry (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Hydration',
-      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
-      wholesale: 24.63,
-      markup: 1.30,
-      img: 'images/jf-hydr-blue-raspberry.jpg'
-    },
-    {
-      id: 'jf-hydr-fruit-punch',
-      name: 'Jocko Hydrate — Fruit Punch (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Hydration',
-      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
-      wholesale: 24.63,
-      markup: 1.30,
-      img: 'images/jf-hydr-fruit-punch.jpg'
-    },
-    {
-      id: 'jf-hydr-island-orange',
-      name: 'Jocko Hydrate — Island Orange (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Hydration',
-      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
-      wholesale: 24.63,
-      markup: 1.30,
-      tag: 'New',
-      img: 'images/jf-hydr-island-orange.jpg'
-    },
-    {
-      id: 'jf-hydr-lemon-lime',
-      name: 'Jocko Hydrate — Lemon Lime (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Hydration',
-      desc: 'Electrolyte hydration drink, no caffeine. Case of 12 × 16oz bottles.',
-      wholesale: 24.63,
-      markup: 1.30,
-      tag: 'New',
-      img: 'images/jf-hydr-lemon-lime.jpg'
-    },
-    {
-      id: 'jf-creatine-sticks-30',
-      name: 'Jocko Creatine Sticks (30-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Performance',
-      desc: 'Single-serve creatine sticks, unflavored. Travel-friendly. 30 packets.',
-      wholesale: 14.99,
-      tag: 'New',
-      img: 'images/jf-creatine-sticks.jpg'
-    },
-    {
-      id: 'jf-molk-cookie-chocchip',
-      name: 'Mölk Cookie — Chocolate Chip (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Snacks',
-      desc: 'Soft-baked protein cookie. 52g each. Box of 12.',
-      wholesale: 18.12,
-      tag: 'New',
-      img: 'images/jf-molk-cookie-chocchip.jpg'
-    },
-    {
-      id: 'jf-molk-rtd-chocolate',
-      name: 'Mölk Protein Shake — Chocolate (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Shakes',
-      desc: 'Ready-to-drink protein shake. 30g protein. Case of 12 × 12oz bottles.',
-      wholesale: 34.66,
-      markup: 1.30,
-      tag: 'New',
-      img: 'images/jf-molk-rtd-chocolate.jpg'
-    },
-    {
-      id: 'jf-molk-rtd-coffee',
-      name: 'Mölk Protein Shake — Sweet Cream Coffee (12-pack)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Shakes',
-      desc: 'Ready-to-drink protein shake with coffee kick. 30g protein. Case of 12 × 12oz bottles.',
-      wholesale: 34.66,
-      markup: 1.30,
-      tag: 'New',
-      img: 'images/jf-molk-rtd-coffee.jpg'
-    },
-    {
-      id: 'jf-molk-powder-chocolate',
-      name: 'Mölk Protein Powder — Chocolate (2lb)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Powder',
-      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
-      wholesale: 32.22,
-      tag: 'Best Seller',
-      img: 'images/jf-molk-powder-chocolate.jpg'
-    },
-    {
-      id: 'jf-molk-powder-vanilla',
-      name: 'Mölk Protein Powder — Vanilla (2lb)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Powder',
-      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
-      wholesale: 32.22,
-      img: 'images/jf-molk-powder-vanilla.jpg'
-    },
-    {
-      id: 'jf-molk-powder-cookies-cream',
-      name: 'Mölk Protein Powder — Cookies & Cream (2lb)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Powder',
-      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
-      wholesale: 32.22,
-      img: 'images/jf-molk-powder-cookies-cream.jpg'
-    },
-    {
-      id: 'jf-molk-powder-coffee-donuts',
-      name: 'Mölk Protein Powder — Coffee & Donuts (2lb)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Powder',
-      desc: '22g protein per scoop. Whey + casein + egg blend. 28 servings.',
-      wholesale: 32.22,
-      img: 'images/jf-molk-powder-coffee-donuts.jpg'
-    },
-    {
-      id: 'jf-molk-powder-choc-mint',
-      name: 'Mölk Protein Powder — Chocolate Mint (2lb)',
-      brand: 'Jocko Fuel',
-      category: 'Protein Powder',
-      desc: '22g protein per scoop. Whey + casein + egg blend. 31 servings.',
-      wholesale: 32.22,
-      img: 'images/jf-molk-powder-choc-mint.jpg'
-    },
-    {
-      id: 'jf-prewo-blue-raspberry',
-      name: 'Jocko Pre-Workout — Blue Raspberry (30 srv)',
-      brand: 'Jocko Fuel',
-      category: 'Pre-Workout',
-      desc: '200mg caffeine, citrulline, beta-alanine. High-stim pre-training formula. 30 servings.',
-      wholesale: 29.00,
-      tag: 'New',
-      img: 'images/jf-prewo-blue-raspberry.jpg'
-    },
-    {
-      id: 'jf-prewo-nitro-pop',
-      name: 'Jocko Pre-Workout — Nitro Pop (30 srv)',
-      brand: 'Jocko Fuel',
-      category: 'Pre-Workout',
-      desc: '200mg caffeine, citrulline, beta-alanine. High-stim pre-training formula. 30 servings.',
-      wholesale: 29.00,
-      tag: 'New',
-      img: 'images/jf-prewo-nitro-pop.jpg'
-    },
-  ];
+  // Products are loaded from the Google Sheet — see loadProducts() below.
+  let PRODUCTS = [];
 
-  // Auto-calculate marked-up price (uses per-product markup if set, otherwise base MARKUP)
-  PRODUCTS.forEach(p => {
-    const m = p.markup || MARKUP;
-    p.price = +(p.wholesale * m).toFixed(2);
-  });
+  // Apply markup pricing to each product (called after products load)
+  function calculatePrices() {
+    PRODUCTS.forEach(p => {
+      const m = p.markup || MARKUP;
+      p.price = +(p.wholesale * m).toFixed(2);
+    });
+  }
+
+  // Fetch products from the Google Sheet
+  async function loadProducts() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '<div class="empty">Loading products...</div>';
+    try {
+      const res = await fetch(GOOGLE_SHEET_URL);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Failed to load products');
+      PRODUCTS = data.products || [];
+      calculatePrices();
+      // Prune cart of items that are no longer available
+      const validIds = new Set(PRODUCTS.map(p => p.id));
+      const beforeCount = cart.length;
+      cart = cart.filter(i => validIds.has(i.id));
+      if (cart.length !== beforeCount) saveCart();
+      renderFilters();
+      renderProducts();
+    } catch (err) {
+      console.error('Product load error:', err);
+      grid.innerHTML = '<div class="empty">Couldn\'t load products. Please refresh, or text the gym at (706) 708-4377.</div>';
+    }
+  }
 
   /* ============================================================
      CART STATE
@@ -1214,9 +985,8 @@
   }
 
   // Init
-  renderFilters();
-  renderProducts();
-  saveCart();
+  saveCart();           // restore cart count from localStorage
+  loadProducts();       // fetch products from sheet, then render filters + grid
 
   // Esc closes cart
   document.addEventListener('keydown', e => {
