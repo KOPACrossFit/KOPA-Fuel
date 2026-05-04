@@ -340,6 +340,56 @@
     padding-top: 12px;
     border-top: 1px solid var(--line);
   }
+  .batch {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 40px 0;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .batch-inner {
+    background: var(--bg-2, #181818);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 18px 22px;
+  }
+  .batch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+  .batch-label {
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+  .batch-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+  }
+  .batch-amount .accent { color: var(--accent); }
+  .batch-bar {
+    height: 6px;
+    background: var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .batch-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+  .batch.full .batch-label { color: var(--accent); }
+  @media (max-width: 600px) {
+    .batch { padding: 20px 20px 0; }
+    .batch-inner { padding: 14px 16px; }
+    .batch-amount { font-size: 18px; }
+  }
   .price {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 26px;
@@ -641,11 +691,21 @@
       <div class="how-step">
         <div class="how-num">03</div>
         <div class="how-title">Pickup at KOPA</div>
-        <div class="how-text">We text you when it's in. Stop by the front desk, grab your stuff, pay when you pick up. Cash, card, or Venmo.</div>
+        <div class="how-text">We text you when it's in. Stop by the gym and grab your stuff — the total goes on your next monthly membership charge, no payment needed at pickup.</div>
       </div>
     </div>
   </div>
 </section>
+
+<div class="batch" id="batch" style="display:none">
+  <div class="batch-inner">
+    <div class="batch-row">
+      <span class="batch-label" id="batchLabel">Next batch</span>
+      <span class="batch-amount" id="batchAmount"></span>
+    </div>
+    <div class="batch-bar"><div class="batch-fill" id="batchFill" style="width:0%"></div></div>
+  </div>
+</div>
 
 <div class="filters-wrap">
   <input type="text" class="search" id="search" placeholder="Search supplements..." oninput="renderProducts()">
@@ -736,21 +796,27 @@
      ============================================================ */
   const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxDY5Vlx2xvWxgdWkmdvz6YpFXjqzq84fmpOCro4CkOYOTLYd1JM-FSh73CglUA22zPZw/exec';
 
-  /* ============================================================
-     Default markup (25%). Per-product overrides come from the sheet's
-     "markup" column — leave it blank in the sheet to use this default.
-     ============================================================ */
-  const MARKUP = 1.25;
-
   // Products are loaded from the Google Sheet — see loadProducts() below.
+  // Prices and batch progress are computed server-side.
   let PRODUCTS = [];
 
-  // Apply markup pricing to each product (called after products load)
-  function calculatePrices() {
-    PRODUCTS.forEach(p => {
-      const m = p.markup || MARKUP;
-      p.price = +(p.wholesale * m).toFixed(2);
-    });
+  function renderBatchProgress(batch) {
+    if (!batch || !batch.threshold) return;
+    const wrap     = document.getElementById('batch');
+    const label    = document.getElementById('batchLabel');
+    const amount   = document.getElementById('batchAmount');
+    const fill     = document.getElementById('batchFill');
+    const reserved = Number(batch.reserved) || 0;
+    const goal     = Number(batch.threshold);
+    const pct      = Math.min(100, (reserved / goal) * 100);
+    const isFull   = reserved >= goal;
+    wrap.style.display = '';
+    wrap.classList.toggle('full', isFull);
+    label.textContent  = isFull ? 'Threshold met — next order ships soon' : 'Next batch';
+    amount.innerHTML   = isFull
+      ? `<span class="accent">$${reserved.toFixed(0)}</span> reserved`
+      : `<span class="accent">$${reserved.toFixed(0)}</span> of $${goal} reserved`;
+    fill.style.width = pct + '%';
   }
 
   // Fetch products from the Google Sheet
@@ -762,7 +828,7 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Failed to load products');
       PRODUCTS = data.products || [];
-      calculatePrices();
+      renderBatchProgress(data.batch);
       // Prune cart of items that are no longer available
       const validIds = new Set(PRODUCTS.map(p => p.id));
       const beforeCount = cart.length;
@@ -793,7 +859,7 @@
     if (existing) existing.qty++;
     else {
       const p = PRODUCTS.find(p => p.id === id);
-      cart.push({ id, name: p.name, price: p.price, img: p.img, qty: 1 });
+      cart.push({ id, name: p.name, price: p.price, img: p.image, qty: 1 });
     }
     saveCart();
     // visual feedback
@@ -857,7 +923,7 @@
       <div class="card">
         <div class="card-img-wrap">
           ${p.tag ? `<span class="card-tag">${p.tag}</span>` : ''}
-          <img src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.style.opacity=0.3">
+          <img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.opacity=0.3">
         </div>
         <div class="card-body">
           <div class="card-cat">${p.category}</div>
