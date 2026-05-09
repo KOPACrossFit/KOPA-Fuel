@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>KOPA Fuel — Grab a Single</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --bg-2: #181818;
+    --bg-3: #222222;
+    --ink: #ffffff;
+    --ink-dim: #b8b8b8;
+    --ink-faint: #6e6e6e;
+    --accent: #f47b20;
+    --accent-dark: #d4631a;
+    --accent-glow: rgba(244, 123, 32, 0.35);
+    --line: #2a2a2a;
+    --radius: 4px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Barlow', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(244,123,32,0.08), transparent 50%),
+      radial-gradient(circle at 80% 100%, rgba(244,123,32,0.05), transparent 55%);
+    pointer-events: none; z-index: 0;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 0.06em;
+    display: flex; align-items: baseline; gap: 10px; line-height: 1;
+  }
+  .logo .brand { color: var(--accent); }
+
+  /* Page-mode toggle */
+  .modes {
+    display: flex; gap: 6px;
+    padding: 14px 20px 0;
+    max-width: 1100px; margin: 0 auto;
+  }
+  .mode {
+    flex: 1; text-align: center;
+    background: var(--bg-2); border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 10px 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: all 0.15s ease;
+  }
+  .mode:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .mode.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .intro {
+    max-width: 1100px; margin: 0 auto;
+    padding: 22px 20px 8px;
+    position: relative; z-index: 1;
+  }
+  .intro h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1; letter-spacing: 0.02em;
+    margin-bottom: 8px;
+  }
+  .intro h1 .accent { color: var(--accent); }
+  .intro p {
+    color: var(--ink-dim); font-size: 14px; max-width: 640px;
+  }
+
+  main {
+    max-width: 1100px; margin: 0 auto;
+    padding: 18px 20px 200px;
+    position: relative; z-index: 1;
+  }
+
+  .filter-row {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .chip {
+    background: transparent; border: 1px solid var(--line);
+    color: var(--ink-dim);
+    padding: 8px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 12px; letter-spacing: 0.15em;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.15s ease;
+  }
+  .chip:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  .singles-list {
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 14px; align-items: center;
+    background: var(--bg-2); border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    transition: border-color 0.15s ease;
+  }
+  .row.in-cart { border-color: var(--accent); }
+  .row-img {
+    width: 56px; height: 56px;
+    background: var(--bg-3);
+    border-radius: var(--radius);
+    object-fit: contain;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+  .row-info { min-width: 0; }
+  .row-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; line-height: 1.1;
+    letter-spacing: 0.02em;
+    margin-bottom: 2px;
+  }
+  .row-meta {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .row-meta .price {
+    color: var(--accent); margin-left: 8px; font-weight: 700;
+  }
+  .row-controls {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .qty-btn {
+    background: var(--bg-3); border: 1px solid var(--line);
+    color: var(--ink); width: 38px; height: 38px;
+    cursor: pointer; font-size: 20px; font-weight: 700;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qty-btn:hover, .qty-btn:active {
+    border-color: var(--accent); color: var(--accent);
+  }
+  .qty-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    min-width: 28px; text-align: center;
+    color: var(--ink);
+  }
+  .qty-num.zero { color: var(--ink-faint); }
+
+  /* Floating checkout bar */
+  .checkout-bar {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(10,10,10,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--accent);
+    padding: 14px 20px env(safe-area-inset-bottom);
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .checkout-bar.show { transform: translateY(0); }
+  .checkout-inner {
+    max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 14px;
+  }
+  .checkout-summary {
+    flex: 1; display: flex; align-items: baseline; gap: 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .checkout-summary .count {
+    font-size: 13px; letter-spacing: 0.2em; color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .checkout-summary .total {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; color: var(--ink);
+  }
+  .checkout-summary .total .currency { color: var(--accent); margin-right: 2px; }
+  .checkout-btn {
+    background: var(--accent); color: white;
+    border: none; padding: 14px 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 14px; letter-spacing: 0.18em;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: var(--radius);
+    transition: all 0.2s ease;
+  }
+  .checkout-btn:hover { background: var(--accent-dark); }
+  .checkout-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  /* Submit modal (simple inline form) */
+  .submit-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: none; align-items: flex-end; justify-content: center;
+    padding: 0;
+  }
+  .submit-modal.open { display: flex; }
+  .submit-card {
+    background: var(--bg);
+    border-top: 1px solid var(--accent);
+    border-radius: 12px 12px 0 0;
+    width: 100%; max-width: 540px;
+    padding: 24px 22px env(safe-area-inset-bottom);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .submit-card h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px; letter-spacing: 0.04em;
+  }
+  .submit-card label {
+    display: block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    margin-bottom: 6px; font-weight: 700;
+  }
+  .submit-card input {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 14px 14px;
+    font-family: 'Barlow', sans-serif; font-size: 16px;
+    border-radius: var(--radius);
+  }
+  .submit-card input:focus { outline: none; border-color: var(--accent); }
+  .submit-card .summary {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 13px; color: var(--ink-dim);
+    max-height: 140px; overflow-y: auto;
+    line-height: 1.6;
+  }
+  .submit-card .summary strong { color: var(--ink); }
+  .submit-actions { display: flex; gap: 8px; }
+  .submit-actions button { flex: 1; padding: 14px; }
+  .cancel-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.18em;
+    text-transform: uppercase; cursor: pointer;
+    border-radius: var(--radius);
+  }
+  .cancel-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .success-view { text-align: center; padding: 16px 0; }
+  .success-view h3 { color: var(--accent); margin-bottom: 8px; }
+  .success-view p { color: var(--ink-dim); margin-bottom: 16px; }
+
+  .empty {
+    text-align: center; padding: 60px 20px;
+    color: var(--ink-faint);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.2em;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--ink-faint);
+    font-size: 12px;
+    padding: 30px 20px;
+    border-top: 1px solid var(--line);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .nav { padding: 12px 16px; }
+    .modes { padding: 12px 16px 0; }
+    .intro { padding: 18px 16px 4px; }
+    main { padding: 14px 16px 240px; }
+    .row { grid-template-columns: 56px 1fr auto; padding: 8px 12px; gap: 12px; }
+    .row-img { width: 50px; height: 50px; }
+    .row-name { font-size: 16px; }
+    .qty-btn { width: 36px; height: 36px; font-size: 18px; }
+    .qty-num { font-size: 20px; min-width: 24px; }
+    .checkout-summary .total { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="logo">
+      <span class="brand">KOPA</span> FUEL
+    </div>
+  </div>
+</header>
+
+<div class="modes">
+  <a href="index.html" class="mode">Pre-Order Bulk</a>
+  <a href="singles.html" class="mode active">Grab a Single</a>
+</div>
+
+<section class="intro">
+  <h1>GRAB &amp; <span class="accent">GO.</span></h1>
+  <p>Add what you grabbed. We'll add it to your monthly tab. No payment now.</p>
+</section>
+
+<main>
+  <div class="filter-row" id="filters"></div>
+  <div class="singles-list" id="list">
+    <div class="empty">Loading...</div>
+  </div>
+</main>
+
+<div class="checkout-bar" id="checkoutBar">
+  <div class="checkout-inner">
+    <div class="checkout-summary">
+      <span class="count" id="checkoutCount">0 items</span>
+      <span class="total"><span class="currency">$</span><span id="checkoutTotal">0.00</span></span>
+    </div>
+    <button class="checkout-btn" onclick="openSubmit()">Check Out</button>
+  </div>
+</div>
+
+<div class="submit-modal" id="submitModal">
+  <div class="submit-card" id="submitCard">
+    <h3>Add to your tab</h3>
+    <div class="summary" id="orderSummary"></div>
+    <div>
+      <label>Your Name</label>
+      <input type="text" id="custName" placeholder="First and last" autocomplete="name">
+    </div>
+    <div>
+      <label>Phone (so we can find your account)</label>
+      <input type="tel" id="custPhone" placeholder="(706) 555-0100" autocomplete="tel">
+    </div>
+    <div class="submit-actions">
+      <button class="cancel-btn" onclick="closeSubmit()">Cancel</button>
+      <button class="checkout-btn" id="finalSubmit" onclick="submitOrder()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Questions? <a href="tel:+17067084377">(706) 708-4377</a>
+</footer>
+
+<script>
+  const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxDY5Vlx2xvWxgdWkmdvz6YpFXjqzq84fmpOCro4CkOYOTLYd1JM-FSh73CglUA22zPZw/exec';
+
+  let PRODUCTS = [];
+  let cart = {};      // { id: { qty, name, price, image, supplier } }
+  let activeFilter = 'All';
+
+  const $ = id => document.getElementById(id);
+
+  async function loadProducts() {
+    try {
+      const res = await fetch(GOOGLE_SHEET_URL + '?mode=singles');
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'load failed');
+      PRODUCTS = data.products || [];
+      renderFilters();
+      render();
+    } catch (e) {
+      console.error(e);
+      $('list').innerHTML = '<div class="empty">Couldn\'t load. Refresh, or text the gym at (706) 708-4377.</div>';
+    }
+  }
+
+  function renderFilters() {
+    const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))].filter(Boolean);
+    $('filters').innerHTML = cats.map(c => `
+      <button class="chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c.replace(/'/g, "\\'")}')">${c}</button>
+    `).join('');
+  }
+
+  function setFilter(c) {
+    activeFilter = c;
+    renderFilters();
+    render();
+  }
+
+  function render() {
+    const items = PRODUCTS.filter(p => activeFilter === 'All' || p.category === activeFilter);
+    if (!items.length) {
+      $('list').innerHTML = '<div class="empty">Nothing in this category.</div>';
+    } else {
+      $('list').innerHTML = items.map(p => {
+        const inCart = cart[p.id];
+        const qty = inCart ? inCart.qty : 0;
+        return `
+          <div class="row ${qty ? 'in-cart' : ''}">
+            <img class="row-img" src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.opacity=0.3">
+            <div class="row-info">
+              <div class="row-name">${p.name}</div>
+              <div class="row-meta">${p.brand}<span class="price">$${p.price.toFixed(2)}</span></div>
+            </div>
+            <div class="row-controls">
+              <button class="qty-btn" onclick="changeQty('${p.id}', -1)">−</button>
+              <span class="qty-num ${qty ? '' : 'zero'}">${qty}</span>
+              <button class="qty-btn" onclick="changeQty('${p.id}', 1)">+</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+    updateCheckoutBar();
+  }
+
+  function changeQty(id, delta) {
+    const p = PRODUCTS.find(x => x.id === id);
+    if (!p) return;
+    const cur = cart[id] ? cart[id].qty : 0;
+    const next = Math.max(0, cur + delta);
+    if (next === 0) {
+      delete cart[id];
+    } else {
+      cart[id] = { qty: next, name: p.name, price: p.price, image: p.image, supplier: p.supplier };
+    }
+    render();
+  }
+
+  function updateCheckoutBar() {
+    const ids = Object.keys(cart);
+    const count = ids.reduce((s, id) => s + cart[id].qty, 0);
+    const total = ids.reduce((s, id) => s + cart[id].qty * cart[id].price, 0);
+    $('checkoutCount').textContent = `${count} item${count === 1 ? '' : 's'}`;
+    $('checkoutTotal').textContent = total.toFixed(2);
+    $('checkoutBar').classList.toggle('show', count > 0);
+  }
+
+  function openSubmit() {
+    const lines = Object.keys(cart).map(id => {
+      const i = cart[id];
+      return `<div><strong>${i.qty}×</strong> ${i.name} <span style="color:var(--ink-faint)">— $${(i.qty * i.price).toFixed(2)}</span></div>`;
+    });
+    const total = Object.keys(cart).reduce((s, id) => s + cart[id].qty * cart[id].price, 0);
+    lines.push(`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line)"><strong>Total: $${total.toFixed(2)}</strong></div>`);
+    $('orderSummary').innerHTML = lines.join('');
+    $('submitModal').classList.add('open');
+  }
+
+  function closeSubmit() {
+    $('submitModal').classList.remove('open');
+  }
+
+  async function submitOrder() {
+    const name = $('custName').value.trim();
+    const phone = $('custPhone').value.trim();
+    if (!name || !phone) {
+      alert('Please add your name and phone so we can charge the right account.');
+      return;
+    }
+    const ids = Object.keys(cart);
+    if (!ids.length) { closeSubmit(); return; }
+
+    const btn = $('finalSubmit');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const items = ids.map(id => `${cart[id].qty}x ${cart[id].name} ($${(cart[id].qty * cart[id].price).toFixed(2)})`).join(' | ');
+    const itemCount = ids.reduce((s, id) => s + cart[id].qty, 0);
+    const total = ids.reduce((s, id) => s + cart[id].qty * cart[id].price, 0).toFixed(2);
+    const itemsJson = JSON.stringify(ids.map(id => ({
+      id, qty: cart[id].qty, price: cart[id].price, supplier: cart[id].supplier
+    })));
+
+    try {
+      await fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          singles: true,
+          timestamp: new Date().toISOString(),
+          name, phone,
+          email: '', notes: '',
+          items, itemCount, total, itemsJson,
+        }),
+      });
+      $('submitCard').innerHTML = `
+        <div class="success-view">
+          <h3>ADDED TO YOUR TAB</h3>
+          <p>Total $${total} will land on your next monthly billing.</p>
+          <button class="checkout-btn" onclick="location.reload()">Done</button>
+        </div>`;
+      cart = {};
+    } catch (e) {
+      alert('Could not submit. Please tell a coach or text (706) 708-4377.');
+      btn.disabled = false;
+      btn.textContent = 'Confirm';
+    }
+  }
+
+  loadProducts();
+</script>
+</body>
+</html>
