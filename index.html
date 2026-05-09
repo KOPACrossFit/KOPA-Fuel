@@ -352,7 +352,15 @@
     border-radius: 4px;
     padding: 18px 22px;
   }
+  .batch-row + .batch-row {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
   .batch-row {
+    display: block;
+  }
+  .batch-row-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -384,7 +392,7 @@
     background: var(--accent);
     transition: width 0.4s ease;
   }
-  .batch.full .batch-label { color: var(--accent); }
+  .batch-row.full .batch-label { color: var(--accent); }
   @media (max-width: 600px) {
     .batch { padding: 20px 20px 0; }
     .batch-inner { padding: 14px 16px; }
@@ -698,13 +706,7 @@
 </section>
 
 <div class="batch" id="batch" style="display:none">
-  <div class="batch-inner">
-    <div class="batch-row">
-      <span class="batch-label" id="batchLabel">Next batch</span>
-      <span class="batch-amount" id="batchAmount"></span>
-    </div>
-    <div class="batch-bar"><div class="batch-fill" id="batchFill" style="width:0%"></div></div>
-  </div>
+  <div class="batch-inner" id="batchInner"></div>
 </div>
 
 <div class="filters-wrap">
@@ -800,23 +802,32 @@
   // Prices and batch progress are computed server-side.
   let PRODUCTS = [];
 
-  function renderBatchProgress(batch) {
-    if (!batch || !batch.threshold) return;
-    const wrap     = document.getElementById('batch');
-    const label    = document.getElementById('batchLabel');
-    const amount   = document.getElementById('batchAmount');
-    const fill     = document.getElementById('batchFill');
-    const reserved = Number(batch.reserved) || 0;
-    const goal     = Number(batch.threshold);
-    const pct      = Math.min(100, (reserved / goal) * 100);
-    const isFull   = reserved >= goal;
+  function renderBatchProgress(batches) {
+    if (!batches || !batches.length) return;
+    const wrap  = document.getElementById('batch');
+    const inner = document.getElementById('batchInner');
     wrap.style.display = '';
-    wrap.classList.toggle('full', isFull);
-    label.textContent  = isFull ? 'Threshold met — next order ships soon' : 'Next batch';
-    amount.innerHTML   = isFull
-      ? `<span class="accent">$${reserved.toFixed(0)}</span> reserved`
-      : `<span class="accent">$${reserved.toFixed(0)}</span> of $${goal} reserved`;
-    fill.style.width = pct + '%';
+    inner.innerHTML = batches.map(b => {
+      const reserved = Number(b.reserved) || 0;
+      const goal     = Number(b.threshold) || 0;
+      if (!goal) return '';
+      const pct    = Math.min(100, (reserved / goal) * 100);
+      const isFull = reserved >= goal;
+      const label  = isFull
+        ? `${b.supplier} batch — threshold met, ships soon`
+        : `${b.supplier} batch`;
+      const amount = isFull
+        ? `<span class="accent">$${reserved.toFixed(0)}</span> reserved`
+        : `<span class="accent">$${reserved.toFixed(0)}</span> of $${goal} reserved`;
+      return `
+        <div class="batch-row ${isFull ? 'full' : ''}">
+          <div class="batch-row-head">
+            <span class="batch-label">${label}</span>
+            <span class="batch-amount">${amount}</span>
+          </div>
+          <div class="batch-bar"><div class="batch-fill" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
   }
 
   // Fetch products from the Google Sheet
@@ -828,7 +839,7 @@
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Failed to load products');
       PRODUCTS = data.products || [];
-      renderBatchProgress(data.batch);
+      renderBatchProgress(data.batches || (data.batch ? [data.batch] : []));
       // Prune cart of items that are no longer available
       const validIds = new Set(PRODUCTS.map(p => p.id));
       const beforeCount = cart.length;
@@ -859,7 +870,7 @@
     if (existing) existing.qty++;
     else {
       const p = PRODUCTS.find(p => p.id === id);
-      cart.push({ id, name: p.name, price: p.price, img: p.image, qty: 1 });
+      cart.push({ id, name: p.name, price: p.price, img: p.image, qty: 1, supplier: p.supplier || 'Muscle Foods' });
     }
     saveCart();
     // visual feedback
@@ -1009,6 +1020,7 @@
       timestamp: new Date().toISOString(),
       name, phone, email, notes,
       items: cart.map(i => `${i.qty}x ${i.name} ($${(i.price * i.qty).toFixed(2)})`).join(' | '),
+      itemsJson: JSON.stringify(cart.map(i => ({ id: i.id, qty: i.qty, price: i.price, supplier: i.supplier }))),
       itemCount: cart.reduce((s,i) => s + i.qty, 0),
       total: cartTotal().toFixed(2),
     };
