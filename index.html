@@ -850,8 +850,8 @@
 
   // Fetch products from the Google Sheet
   async function loadProducts() {
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '<div class="empty">Loading products...</div>';
+    const main = document.getElementById('main');
+    main.innerHTML = '<div class="grid"><div class="empty">Loading products...</div></div>';
     try {
       const res = await fetch(GOOGLE_SHEET_URL);
       const data = await res.json();
@@ -867,7 +867,7 @@
       renderProducts();
     } catch (err) {
       console.error('Product load error:', err);
-      grid.innerHTML = '<div class="empty">Couldn\'t load products. Please refresh, or text the gym at (706) 708-4377.</div>';
+      main.innerHTML = '<div class="grid"><div class="empty">Couldn\'t load products. Please refresh, or text the gym at (706) 708-4377.</div></div>';
     }
   }
 
