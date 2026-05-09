@@ -393,6 +393,26 @@
     transition: width 0.4s ease;
   }
   .batch-row.full .batch-label { color: var(--accent); }
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    margin: 60px 0 30px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 0.18em;
+    color: var(--ink);
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  @media (max-width: 600px) {
+    .section-divider { font-size: 26px; gap: 16px; margin: 40px 0 22px; }
+  }
   @media (max-width: 600px) {
     .batch { padding: 20px 20px 0; }
     .batch-inner { padding: 14px 16px; }
@@ -714,9 +734,7 @@
   <div class="filters" id="filters"></div>
 </div>
 
-<main>
-  <div class="grid" id="grid"></div>
-</main>
+<main id="main"></main>
 
 <footer>
   <div class="big">KOPA FUEL</div>
@@ -918,19 +936,8 @@
     renderProducts();
   }
 
-  function renderProducts() {
-    const q = document.getElementById('search').value.toLowerCase();
-    const filtered = PRODUCTS.filter(p => {
-      const catMatch = activeFilter === 'All' || p.category === activeFilter;
-      const qMatch = !q || (p.name + ' ' + p.desc + ' ' + p.brand).toLowerCase().includes(q);
-      return catMatch && qMatch;
-    });
-    const grid = document.getElementById('grid');
-    if (filtered.length === 0) {
-      grid.innerHTML = '<div class="empty">No products match.</div>';
-      return;
-    }
-    grid.innerHTML = filtered.map(p => `
+  function cardHtml(p) {
+    return `
       <div class="card">
         <div class="card-img-wrap">
           ${p.tag ? `<span class="card-tag">${p.tag}</span>` : ''}
@@ -945,8 +952,44 @@
             <button class="add-btn" data-add="${p.id}" onclick="addToCart('${p.id}')">Add</button>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+  }
+
+  function gridHtml(items) {
+    return `<div class="grid">${items.map(cardHtml).join('')}</div>`;
+  }
+
+  function renderProducts() {
+    const q = document.getElementById('search').value.toLowerCase();
+    const filtered = PRODUCTS.filter(p => {
+      const catMatch = activeFilter === 'All' || p.category === activeFilter;
+      const qMatch = !q || (p.name + ' ' + p.desc + ' ' + p.brand).toLowerCase().includes(q);
+      return catMatch && qMatch;
+    });
+    const main = document.getElementById('main');
+    if (filtered.length === 0) {
+      main.innerHTML = '<div class="grid"><div class="empty">No products match.</div></div>';
+      return;
+    }
+
+    // Bucket by supplier. "Muscle Foods" (or unset) renders first as the
+    // main lineup. Any other supplier gets its own labeled section below.
+    const buckets = {};
+    filtered.forEach(p => {
+      const key = (!p.supplier || p.supplier === 'Muscle Foods') ? '_main' : p.supplier;
+      (buckets[key] = buckets[key] || []).push(p);
+    });
+
+    let html = '';
+    if (buckets._main) html += gridHtml(buckets._main);
+    Object.keys(buckets)
+      .filter(k => k !== '_main')
+      .sort()
+      .forEach(supplier => {
+        html += `<div class="section-divider"><span>${supplier}</span></div>`;
+        html += gridHtml(buckets[supplier]);
+      });
+    main.innerHTML = html;
   }
 
   function renderCart() {
