@@ -1049,7 +1049,12 @@
       .filter(k => k !== '_main')
       .sort()
       .forEach(supplier => {
-        html += `<div class="section-divider"><span>${supplier}</span></div>`;
+        // Only show the divider when there's a main grid above it to
+        // separate from. If the user clicked the Thorne filter chip,
+        // the main grid is empty and the label is redundant.
+        if (buckets._main) {
+          html += `<div class="section-divider"><span>${supplier}</span></div>`;
+        }
         html += gridHtml(buckets[supplier]);
       });
     main.innerHTML = html;
