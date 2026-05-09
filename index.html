@@ -972,23 +972,21 @@
       return;
     }
 
-    // Bucket by supplier. "Muscle Foods" (or unset) renders first as the
-    // main lineup. Any other supplier gets its own labeled section below.
-    const buckets = {};
+    // Main grid shows all filtered products (Thorne items live alongside
+    // their categories). Then any non-default supplier ALSO gets its own
+    // labeled section below, repeating their items for easy browsing.
+    const supplierBuckets = {};
     filtered.forEach(p => {
-      const key = (!p.supplier || p.supplier === 'Muscle Foods') ? '_main' : p.supplier;
-      (buckets[key] = buckets[key] || []).push(p);
+      if (p.supplier && p.supplier !== 'Muscle Foods') {
+        (supplierBuckets[p.supplier] = supplierBuckets[p.supplier] || []).push(p);
+      }
     });
 
-    let html = '';
-    if (buckets._main) html += gridHtml(buckets._main);
-    Object.keys(buckets)
-      .filter(k => k !== '_main')
-      .sort()
-      .forEach(supplier => {
-        html += `<div class="section-divider"><span>${supplier}</span></div>`;
-        html += gridHtml(buckets[supplier]);
-      });
+    let html = gridHtml(filtered);
+    Object.keys(supplierBuckets).sort().forEach(supplier => {
+      html += `<div class="section-divider"><span>${supplier}</span></div>`;
+      html += gridHtml(supplierBuckets[supplier]);
+    });
     main.innerHTML = html;
   }
 
