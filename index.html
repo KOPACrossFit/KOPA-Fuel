@@ -578,9 +578,27 @@
     color: var(--accent);
   }
 
-  /* ===== ORDER FORM ===== */
+  /* ===== ORDER FORM =====
+     The cart view AND the order form must be flex columns so the
+     inner .cart-items scrolls and .cart-foot (Reserve / Submit button)
+     stays pinned to the drawer bottom on short screens / in-app browsers. */
+  .cart-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
   .order-form { display: none; }
-  .order-form.open { display: block; }
+  .order-form.open {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  /* Honor iOS home-indicator safe area so the button isn't hidden under it */
+  .cart-foot { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
   .form-group { margin-bottom: 14px; }
   .form-group label {
     display: block;
@@ -843,7 +861,7 @@
     <button class="close" onclick="closeCart()">&times;</button>
   </div>
 
-  <div id="cartContent">
+  <div id="cartContent" class="cart-view">
     <div class="cart-items" id="cartItems"></div>
     <div class="cart-foot" id="cartFoot">
       <div class="pickup-note" style="margin-bottom: 16px;">
