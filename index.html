@@ -202,16 +202,37 @@
     position: relative;
     z-index: 1;
   }
-  .how-inner { max-width: 1100px; margin: 0 auto; }
-  .how-eyebrow {
+  .how-it-works.collapsed { padding: 18px 24px; }
+  .how-inner {
+    max-width: 1100px; margin: 0 auto;
     text-align: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    color: var(--accent);
-    letter-spacing: 0.35em;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 32px;
   }
+  .how-toggle {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.15s ease;
+  }
+  .how-toggle:hover { color: var(--ink); border-color: var(--ink-faint); }
+  .how-toggle-chevron {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .how-it-works:not(.collapsed) .how-toggle-chevron { transform: rotate(180deg); }
+  .how-it-works.collapsed .how-steps { display: none; }
+  .how-it-works:not(.collapsed) .how-steps { margin-top: 28px; }
   .how-steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -719,6 +740,8 @@
 
     /* How it works — collapse padding, compress cards */
     .how-it-works { padding: 32px 16px 24px; }
+    .how-it-works.collapsed { padding: 14px 16px; }
+    .how-toggle { font-size: 11px; padding: 8px 14px; letter-spacing: 0.22em; }
     .how-eyebrow { font-size: 11px; margin-bottom: 20px; letter-spacing: 0.28em; }
     .how-steps { gap: 12px; grid-template-columns: 1fr; }
     .how-step { padding: 16px 18px 14px; }
@@ -823,9 +846,12 @@
   </div>
 </section>
 
-<section class="how-it-works">
+<section class="how-it-works collapsed" id="howSection">
   <div class="how-inner">
-    <div class="how-eyebrow">HOW IT WORKS</div>
+    <button class="how-toggle" onclick="toggleHow()" aria-expanded="false">
+      <span>How it works</span>
+      <span class="how-toggle-chevron" aria-hidden="true">▾</span>
+    </button>
     <div class="how-steps">
       <div class="how-step">
         <div class="how-num">01</div>
@@ -1139,6 +1165,13 @@
     const total = cartTotal();
     document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
     document.getElementById('totalAmount2').textContent = '$' + total.toFixed(2);
+  }
+
+  function toggleHow() {
+    const sec = document.getElementById('howSection');
+    sec.classList.toggle('collapsed');
+    const btn = sec.querySelector('.how-toggle');
+    btn.setAttribute('aria-expanded', !sec.classList.contains('collapsed'));
   }
 
   /* ============================================================
