@@ -1084,9 +1084,11 @@
      RENDERING
      ============================================================ */
   function renderFilters() {
-    const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))];
-    document.getElementById('filters').innerHTML = cats.map(c =>
-      `<button class="filter ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
+    // Build brand list, alphabetized. "All" stays pinned to the front.
+    const brands = [...new Set(PRODUCTS.map(p => p.brand))].filter(Boolean).sort();
+    const chips = ['All', ...brands];
+    document.getElementById('filters').innerHTML = chips.map(c =>
+      `<button class="filter ${c === activeFilter ? 'active' : ''}" onclick="setFilter(${JSON.stringify(c)})">${c}</button>`
     ).join('');
   }
 
@@ -1122,12 +1124,12 @@
   function renderProducts() {
     const q = document.getElementById('search').value.toLowerCase();
 
-    // Auto-discover non-default suppliers (Thorne, LMNT, future...). Filter
-    // chips named after one of these scope the grid to that supplier ONLY.
-    // Otherwise — "All" or any normal category chip — only Muscle Foods items
-    // show; Thorne/LMNT are reachable exclusively via their own chip.
-    const NON_DEFAULT_SUPPLIERS = new Set(
-      PRODUCTS.map(p => p.supplier).filter(s => s && s !== 'Muscle Foods')
+    // Brands that belong to a non-default supplier (Thorne, LMNT, ...). When the
+    // member clicks one of these brand chips, show its items. Otherwise — "All"
+    // or any Muscle-Foods-supplier brand chip — only MF items show, so non-default
+    // suppliers stay hidden until explicitly chosen.
+    const NON_DEFAULT_BRANDS = new Set(
+      PRODUCTS.filter(p => p.supplier && p.supplier !== 'Muscle Foods').map(p => p.brand)
     );
 
     const filtered = PRODUCTS.filter(p => {
@@ -1135,13 +1137,13 @@
       const qMatch = !q || (p.name + ' ' + p.desc + ' ' + p.brand).toLowerCase().includes(q);
       if (!qMatch) return false;
 
-      if (NON_DEFAULT_SUPPLIERS.has(activeFilter)) {
-        // "Thorne" or "LMNT" chip → all items from that supplier, regardless of category.
-        return supplier === activeFilter;
+      if (NON_DEFAULT_BRANDS.has(activeFilter)) {
+        // Brand chip for a non-default supplier (Thorne, LMNT) → its items only.
+        return p.brand === activeFilter;
       }
-      // "All" or a normal category chip → Muscle Foods items only.
+      // "All" or an MF-brand chip → only Muscle Foods items.
       if (supplier !== 'Muscle Foods') return false;
-      return activeFilter === 'All' || p.category === activeFilter;
+      return activeFilter === 'All' || p.brand === activeFilter;
     });
 
     const main = document.getElementById('main');
