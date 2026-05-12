@@ -196,19 +196,25 @@
   .stripe::before { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
 
   /* ===== HOW IT WORKS =====
-     Top padding stays constant so the toggle button doesn't jump
-     when the section expands; only bottom padding changes. */
+     The toggle button lives in its own fixed-padding bar that's
+     anchored regardless of whether the steps below are open or closed.
+     The .how-inner only contains the (collapsible) steps. */
   .how-it-works {
-    padding: 18px 24px 36px;
+    padding: 0;
     border-bottom: 1px solid var(--line);
     position: relative;
     z-index: 1;
   }
-  .how-it-works.collapsed { padding-bottom: 18px; }
+  .how-toggle-bar {
+    padding: 18px 24px;
+    display: flex;
+    justify-content: center;
+  }
   .how-inner {
     max-width: 1100px; margin: 0 auto;
-    text-align: center;
+    padding: 0 24px 36px;
   }
+  .how-it-works.collapsed .how-inner { padding: 0; }
   .how-toggle {
     background: transparent;
     border: 1px solid var(--line);
@@ -234,7 +240,7 @@
   }
   .how-it-works:not(.collapsed) .how-toggle-chevron { transform: rotate(180deg); }
   .how-it-works.collapsed .how-steps { display: none; }
-  .how-it-works:not(.collapsed) .how-steps { margin-top: 28px; }
+  .how-it-works:not(.collapsed) .how-steps { margin-top: 0; }
   .how-steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -740,10 +746,12 @@
     .stripe { font-size: 10px; letter-spacing: 0.15em; gap: 6px; }
     .stripe::before { width: 6px; height: 6px; }
 
-    /* How it works — compress cards; keep top padding constant so
-       the toggle button doesn't jump when expanding. */
-    .how-it-works { padding: 14px 16px 24px; }
-    .how-it-works.collapsed { padding-bottom: 14px; }
+    /* How it works — the toggle bar is the only thing in the collapsed
+       state; the inner steps area adds its own padding when open. */
+    .how-it-works { padding: 0; }
+    .how-toggle-bar { padding: 14px 16px; }
+    .how-inner { padding: 0 16px 24px; }
+    .how-it-works.collapsed .how-inner { padding: 0; }
     .how-toggle { font-size: 11px; padding: 8px 14px; letter-spacing: 0.22em; }
     .how-eyebrow { font-size: 11px; margin-bottom: 20px; letter-spacing: 0.28em; }
     .how-steps { gap: 12px; grid-template-columns: 1fr; }
@@ -850,11 +858,13 @@
 </section>
 
 <section class="how-it-works collapsed" id="howSection">
-  <div class="how-inner">
+  <div class="how-toggle-bar">
     <button class="how-toggle" onclick="toggleHow()" aria-expanded="false">
       <span>How it works</span>
       <span class="how-toggle-chevron" aria-hidden="true">▾</span>
     </button>
+  </div>
+  <div class="how-inner">
     <div class="how-steps">
       <div class="how-step">
         <div class="how-num">01</div>
