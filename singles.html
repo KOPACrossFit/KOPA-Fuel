@@ -220,7 +220,7 @@
   .checkout-btn:hover { background: var(--accent-dark); }
   .checkout-btn:disabled { opacity: 0.6; cursor: wait; }
 
-  /* Submit modal (simple inline form) */
+  /* Submit modal — bottom sheet on mobile, centered card on desktop */
   .submit-modal {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
@@ -237,6 +237,16 @@
     width: 100%; max-width: 540px;
     padding: 24px 22px env(safe-area-inset-bottom);
     display: flex; flex-direction: column; gap: 14px;
+  }
+  @media (min-width: 700px) {
+    .submit-modal { align-items: center; padding: 24px; }
+    .submit-card {
+      max-width: 480px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 28px 26px;
+      box-shadow: 0 25px 60px -15px rgba(0,0,0,0.7);
+    }
   }
   .submit-card h3 {
     font-family: 'Bebas Neue', sans-serif;
