@@ -1072,41 +1072,35 @@
 
   function renderProducts() {
     const q = document.getElementById('search').value.toLowerCase();
+
+    // Auto-discover non-default suppliers (Thorne, LMNT, future...). Filter
+    // chips named after one of these scope the grid to that supplier ONLY.
+    // Otherwise — "All" or any normal category chip — only Muscle Foods items
+    // show; Thorne/LMNT are reachable exclusively via their own chip.
+    const NON_DEFAULT_SUPPLIERS = new Set(
+      PRODUCTS.map(p => p.supplier).filter(s => s && s !== 'Muscle Foods')
+    );
+
     const filtered = PRODUCTS.filter(p => {
-      const catMatch = activeFilter === 'All' || p.category === activeFilter;
+      const supplier = p.supplier || 'Muscle Foods';
       const qMatch = !q || (p.name + ' ' + p.desc + ' ' + p.brand).toLowerCase().includes(q);
-      return catMatch && qMatch;
+      if (!qMatch) return false;
+
+      if (NON_DEFAULT_SUPPLIERS.has(activeFilter)) {
+        // "Thorne" or "LMNT" chip → all items from that supplier, regardless of category.
+        return supplier === activeFilter;
+      }
+      // "All" or a normal category chip → Muscle Foods items only.
+      if (supplier !== 'Muscle Foods') return false;
+      return activeFilter === 'All' || p.category === activeFilter;
     });
+
     const main = document.getElementById('main');
     if (filtered.length === 0) {
       main.innerHTML = '<div class="grid"><div class="empty">No products match.</div></div>';
       return;
     }
-
-    // Bucket by supplier. Default supplier ("Muscle Foods" or unset)
-    // renders first in the main grid. Any other supplier gets its own
-    // labeled section below — items appear in only one place.
-    const buckets = {};
-    filtered.forEach(p => {
-      const key = (!p.supplier || p.supplier === 'Muscle Foods') ? '_main' : p.supplier;
-      (buckets[key] = buckets[key] || []).push(p);
-    });
-
-    let html = '';
-    if (buckets._main) html += gridHtml(buckets._main);
-    Object.keys(buckets)
-      .filter(k => k !== '_main')
-      .sort()
-      .forEach(supplier => {
-        // Only show the divider when there's a main grid above it to
-        // separate from. If the user clicked the Thorne filter chip,
-        // the main grid is empty and the label is redundant.
-        if (buckets._main) {
-          html += `<div class="section-divider"><span>${supplier}</span></div>`;
-        }
-        html += gridHtml(buckets[supplier]);
-      });
-    main.innerHTML = html;
+    main.innerHTML = gridHtml(filtered);
   }
 
   function renderCart() {
