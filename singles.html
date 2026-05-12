@@ -427,6 +427,15 @@
       image: 'images/lmnt-sparkling-16oz-black-cherry-lime.jpg',
       match: p => p.id.startsWith('lmnt-sparkling-'),
     },
+    {
+      key: 'single-smart-water',
+      name: 'Smart Water',
+      desc: 'Single bottle from the fridge.',
+      brand: 'Smartwater',
+      supplier: 'Other',
+      image: 'images/smart-water.jpg',
+      match: p => p.id === 'smart-water',
+    },
   ];
 
   function groupProducts(items) {
