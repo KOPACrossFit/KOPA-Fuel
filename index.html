@@ -377,20 +377,24 @@
     border: 1px solid var(--line);
     border-radius: 4px;
     padding: 18px 22px;
+    display: flex;
+    flex-direction: row;
+    gap: 28px;
   }
   .batch-row + .batch-row {
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
+    padding-left: 28px;
+    border-left: 1px solid var(--line);
   }
   .batch-row {
     display: block;
+    flex: 1;
+    min-width: 0;
   }
   .batch-row-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 16px;
+    gap: 12px;
     margin-bottom: 10px;
   }
   .batch-label {
@@ -722,10 +726,16 @@
     .how-title { font-size: 18px; margin-bottom: 4px; }
     .how-text { font-size: 13px; line-height: 1.45; }
 
-    /* Batch progress — tighter */
+    /* Batch progress — stack vertically on phones; sit side-by-side on desktop */
     .batch { padding: 16px 16px 0; }
-    .batch-inner { padding: 12px 14px; }
-    .batch-row + .batch-row { margin-top: 12px; padding-top: 12px; }
+    .batch-inner { padding: 12px 14px; flex-direction: column; gap: 0; }
+    .batch-row + .batch-row {
+      padding-left: 0;
+      border-left: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
     .batch-row-head { gap: 10px; margin-bottom: 8px; }
     .batch-label { font-size: 10px; letter-spacing: 0.18em; }
     .batch-amount { font-size: 17px; }
