@@ -341,7 +341,6 @@
 </section>
 
 <main>
-  <div class="filter-row" id="filters"></div>
   <div class="singles-list" id="list">
     <div class="empty">Loading...</div>
   </div>
@@ -385,17 +384,74 @@
 
   let PRODUCTS = [];
   let cart = {};      // { id: { qty, name, price, image, supplier } }
-  let activeFilter = 'All';
 
   const $ = id => document.getElementById(id);
+
+  // Collapse the ~20 individual flavor SKUs into 4 grouped tiles. Members
+  // grab whatever flavor is in the cooler — we only need to track type + qty.
+  // Prices are uniform within each group (verified by user).
+  const GROUPS = [
+    {
+      key: 'single-jocko-go',
+      name: 'Jocko GO',
+      desc: 'Any flavor. Grab one from the cooler.',
+      brand: 'Jocko Fuel',
+      supplier: 'Muscle Foods',
+      image: 'images/jf-go-mango-mayhem.jpg',
+      match: p => p.id.startsWith('jf-go-'),
+    },
+    {
+      key: 'single-jocko-molk',
+      name: 'Jocko Mølk Protein Shake',
+      desc: 'Chocolate or Sweet Cream Coffee.',
+      brand: 'Jocko Fuel',
+      supplier: 'Muscle Foods',
+      image: 'images/jf-molk-rtd-chocolate.jpg',
+      match: p => p.id.startsWith('jf-molk-rtd-'),
+    },
+    {
+      key: 'single-lmnt-salt',
+      name: 'LMNT Salt Packet',
+      desc: 'Single packet — any flavor from the basket.',
+      brand: 'LMNT',
+      supplier: 'LMNT',
+      image: 'images/lmnt-salt-single-citrus.jpg',
+      match: p => p.id.startsWith('lmnt-salt-box-'),
+    },
+    {
+      key: 'single-lmnt-sparkling',
+      name: 'LMNT Sparkling',
+      desc: 'Any flavor can from the cooler.',
+      brand: 'LMNT',
+      supplier: 'LMNT',
+      image: 'images/lmnt-sparkling-16oz-black-cherry-lime.jpg',
+      match: p => p.id.startsWith('lmnt-sparkling-'),
+    },
+  ];
+
+  function groupProducts(items) {
+    return GROUPS.map(g => {
+      const matches = items.filter(g.match);
+      if (!matches.length) return null;
+      return {
+        id: g.key,
+        name: g.name,
+        brand: g.brand,
+        category: g.name, // unused now (filter row hidden), but kept for consistency
+        desc: g.desc,
+        price: matches[0].price, // uniform within group
+        image: g.image,
+        supplier: g.supplier,
+      };
+    }).filter(Boolean);
+  }
 
   async function loadProducts() {
     try {
       const res = await fetch(GOOGLE_SHEET_URL + '?mode=singles');
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'load failed');
-      PRODUCTS = data.products || [];
-      renderFilters();
+      PRODUCTS = groupProducts(data.products || []);
       render();
     } catch (e) {
       console.error(e);
@@ -403,21 +459,8 @@
     }
   }
 
-  function renderFilters() {
-    const cats = ['All', ...new Set(PRODUCTS.map(p => p.category))].filter(Boolean);
-    $('filters').innerHTML = cats.map(c => `
-      <button class="chip ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c.replace(/'/g, "\\'")}')">${c}</button>
-    `).join('');
-  }
-
-  function setFilter(c) {
-    activeFilter = c;
-    renderFilters();
-    render();
-  }
-
   function render() {
-    const items = PRODUCTS.filter(p => activeFilter === 'All' || p.category === activeFilter);
+    const items = PRODUCTS;
     if (!items.length) {
       $('list').innerHTML = '<div class="empty">Nothing in this category.</div>';
     } else {
