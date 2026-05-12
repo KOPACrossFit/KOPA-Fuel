@@ -195,14 +195,16 @@
   }
   .stripe::before { content: ""; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
 
-  /* ===== HOW IT WORKS ===== */
+  /* ===== HOW IT WORKS =====
+     Top padding stays constant so the toggle button doesn't jump
+     when the section expands; only bottom padding changes. */
   .how-it-works {
-    padding: 56px 24px 36px;
+    padding: 18px 24px 36px;
     border-bottom: 1px solid var(--line);
     position: relative;
     z-index: 1;
   }
-  .how-it-works.collapsed { padding: 18px 24px; }
+  .how-it-works.collapsed { padding-bottom: 18px; }
   .how-inner {
     max-width: 1100px; margin: 0 auto;
     text-align: center;
@@ -738,9 +740,10 @@
     .stripe { font-size: 10px; letter-spacing: 0.15em; gap: 6px; }
     .stripe::before { width: 6px; height: 6px; }
 
-    /* How it works — collapse padding, compress cards */
-    .how-it-works { padding: 32px 16px 24px; }
-    .how-it-works.collapsed { padding: 14px 16px; }
+    /* How it works — compress cards; keep top padding constant so
+       the toggle button doesn't jump when expanding. */
+    .how-it-works { padding: 14px 16px 24px; }
+    .how-it-works.collapsed { padding-bottom: 14px; }
     .how-toggle { font-size: 11px; padding: 8px 14px; letter-spacing: 0.22em; }
     .how-eyebrow { font-size: 11px; margin-bottom: 20px; letter-spacing: 0.28em; }
     .how-steps { gap: 12px; grid-template-columns: 1fr; }
