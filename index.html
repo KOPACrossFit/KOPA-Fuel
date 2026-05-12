@@ -1087,9 +1087,10 @@
     // Build brand list, alphabetized. "All" stays pinned to the front.
     const brands = [...new Set(PRODUCTS.map(p => p.brand))].filter(Boolean).sort();
     const chips = ['All', ...brands];
-    document.getElementById('filters').innerHTML = chips.map(c =>
-      `<button class="filter ${c === activeFilter ? 'active' : ''}" onclick="setFilter(${JSON.stringify(c)})">${c}</button>`
-    ).join('');
+    document.getElementById('filters').innerHTML = chips.map(c => {
+      const safe = String(c).replace(/'/g, "\\'");
+      return `<button class="filter ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${safe}')">${c}</button>`;
+    }).join('');
   }
 
   function setFilter(c) {
